@@ -775,12 +775,74 @@ kubectl delete -f k8s/
 
 O projeto inclui um `Jenkinsfile` completo para automação:
 
-```
+
 📁 pipeline/
 ├── 📄 Jenkinsfile
 ├── 📄 docker-compose.test.yml
 └── 📄 k8s-deploy.sh
+
+### ⚖️ Configuração do Projeto no Jenkins
+
+1. Criar Novo Job
+Tipo: Pipeline
+Nome: HelpDesk-Pro-Suporte-TI-Agil
+
+2. Configuração do SCM
+Pipeline script from SCM
+SCM: Git
+URL: https://github.com/AlessandroWindson/HelpDesk-Pro-Suporte-TI-Agil.git
+Branch: */main
+Script Path: Jenkinsfile
+
+
+📃 Jenkinsfile de Exemplo
 ```
+
+pipeline {
+    agent any
+
+    stages {
+        stage('Build Backend Docker') {
+            steps {
+                dir('backend') {
+                    sh 'docker build -t agendamento-app .'
+                }
+            }
+        }
+        stage('Executar Container Backend') {
+            steps {
+                sh 'docker run --rm agendamento-app'
+            }
+        }
+    }
+}
+🔧 Dockerfile do Backend
+FROM python:3.10-slim
+
+WORKDIR /app
+COPY . .
+RUN pip install -r requirements.txt
+CMD ["python", "app.py"]
+
+```
+
+### 📧 Configuração de Envio de E-mail (Mailtrap ou SMTP)
+Configure no código app.py ou no Jenkins plugin Email Extension. Exemplo com Mailtrap:
+
+import smtplib
+from email.mime.text import MIMEText
+
+msg = MIMEText("Seu agendamento foi processado com sucesso!")
+msg['Subject'] = "Confirmação"
+msg['From'] = "from@example.com"
+msg['To'] = "to@example.com"
+
+s = smtplib.SMTP("smtp.mailtrap.io", 2525)
+s.login("usuario", "senha")
+s.send_message(msg)
+s.quit()
+
+
 
 ### 🏗️ Estágios do Pipeline
 
@@ -815,7 +877,7 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                git branch: 'main', url: 'https://github.com/helpdesk-pro/helpdesk-pro.git'
+                git branch: 'main', url: 'https://github.com/AlessandroWindson/HelpDesk-Pro-Suporte-TI-Agil.git'
             }
         }
 
